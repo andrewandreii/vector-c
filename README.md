@@ -2,41 +2,40 @@
 
 ## Requirements for vector.c
 
-**vector.c is just for testing and understanding better how the code in vector.h runs**
-
 `mcheck.h` - should be available on linux ([how to use mtrace?](https://en.wikipedia.org/wiki/Mtrace))
 
-`stdio.h` - should be available
-
----
-
-**vector.h is the actual code that implements vectors**
-
-`string.h` and `stdlib.h` - are most likely already on your machine
+`stdio.h` `string.h` and `stdlib.h` - are most likely already on your machine
 
 ## How to test
 
-```bash
-gcc -g vector.c
-./a.out
-touch mtraceoutput
-mtrace a.out mtraceoutput # checks for memory leaks
+```sh
+make test
+```
+
+## How to build
+
+```sh
+make
+```
+or
+```sh
+make lib
 ```
 
 ## How to use
 
-copy `vector.h` in what folder you want to use it and include it
-```bash
-cp $PATH_TO_REPO/vector.h $PATH_TO_YOUR_PROJECT
-```
+1) copy libvector.a and vector.h to your project
 
-and
-
+2) add this to your program
 ```c
 #include "vector.h"
 ```
 
+3) compile with the flags `-L. -lvector`
+
 ## Example code
+run the code below with `make example`
+
 ```c
 #include "vector.h"
 #include <stdio.h>

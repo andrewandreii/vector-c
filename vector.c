@@ -1,72 +1,161 @@
-#include <stdio.h>
 #include "vector.h"
-#include <mcheck.h> // for memory leaks:)
 
-void
-print (const char *c, int *n) {
-	printf(c, *n);
+vec *
+vec_make (int elem_size) {
+	vec *v = malloc(sizeof(vec));
+	v->v = malloc(sizeof(void *) * DEFAULT_SIZE);
+	v->capacity = DEFAULT_SIZE;
+	v->elem_size = elem_size;
 }
 
 void
-print_vec (const char *c, vec *v) {
+vec_free_v (vec *v) {
 	int i = 0;
-	printf(c);
-	printf("size: %d\ncapacity: %d\n", v->size, v->capacity);
 	while (i < v->size) {
-		print("%d\n", vec_at(v, i));
+		free(v->v[i]);
 		++ i;
 	}
-	printf("\n");
+	v->size = 0;
 }
 
 void
-main (void) {
-	mtrace();
+vec_free (vec *v) {
+	vec_free_v(v);
+	free(v->v);
+	free(v);
+}
 
-	vec *v = vec_make(4);
-	int elems[6] = { 1, 2, 3, 4, 5, 6 };
-	vec_append(v, elems + 0);
-	vec_append(v, elems + 1);
-	vec_append(v, elems + 2);
-	vec_append(v, elems + 3);
-	vec_append(v, elems + 4);
-	print_vec("4 elements appened:\n", v);
+void
+vec_erase (vec *v, int start, int end) {
+	int i = start;
+	while (i < end) {
+		free(v->v[i]);
+		++ i;
+	}
 
-	vec_insert(v, elems + 5, 3);
-	print_vec("elem + 5 inserted:\n", v);
+	memmove(v->v + start, v->v + end, (v->size - end) * sizeof(void *));
+	v->size = v->size - (end - start);
+}
 
-	vec_remove(v, 5);
-	vec_remove(v, 1);
-	vec_shrink(v);
-	print_vec("shrinked and elements 5 and 1 removed:\n", v);
+void
+vec_realloc (vec *v, int new_cap) {
+	v->v = realloc(v->v, sizeof(void *) * new_cap);
+	v->capacity = new_cap;
+}
 
-	vec_reserve(v, 10);
-	print_vec("reserved:\n", v);
+// copy a void * to another void *
+void *
+vec_make_ptr (vec *v, void *data) {
+	void *new_ptr = malloc(v->elem_size);
+	memcpy(new_ptr, data, v->elem_size);
+	return new_ptr;
+}
 
-	vec *new_v = vec_make(4);
-	vec_assign(new_v, v);
-	print_vec("new vector:\n", new_v);
+void
+vec_do (vec *v, void *data, int idx, int code) {
+	void *new_ptr = vec_make_ptr(v, data);
 
-	int *popped = vec_pop_back(v);
-	print("popped = %d\n\n", popped);
-	free(popped);
+	switch (code) {
+		case VEC_SET:
+			vec_set_ptr(v, new_ptr, idx); break;
+		case VEC_APPEND:
+			vec_append_ptr(v, new_ptr); break;
+		case VEC_INSERT:
+			vec_insert_ptr(v, new_ptr, idx); break;
+	}
+}
 
-	vec_swap(v, new_v);
-	printf("swapped:\n");
-	print_vec("v =\n", v);
-	print_vec("new_v =\n", new_v);
+void
+vec_set_ptr (vec *v, void *data, int idx) {
+	free(v->v[idx]);
+	v->v[idx] = data;
+}
 
-	vec_clear(new_v);
-	print_vec("cleared new_v:\n", new_v);
-	vec_free(new_v);
+void
+vec_append_ptr (vec *v, void *data) {
+	if (v->size == v->capacity) {
+		vec_realloc(v, v->capacity + DEFAULT_SIZE);
+	}
 
-	vec_set(v, elems + 5, 0);
-	print_vec("set idx 0 to elem + 5:\n", v);
+	v->v[v->size] = data;
+	++ v->size;
+}
 
-	vec_erase(v, 0, 2);
-	print_vec("erased from 0 to 2:\n", v);
 
-	vec_free(v);
+void
+vec_insert_ptr (vec *v, void *data, int idx) {
+	if (v->size == v->capacity) {
+		vec_realloc(v, v->capacity + DEFAULT_SIZE);
+	}
 
-	muntrace();
+	int i = v->size;
+	while (i >= idx) {
+		v->v[i + 1] = v->v[i];
+		-- i;
+	}
+
+	v->v[idx] = data;
+	++ v->size;
+}
+
+void
+vec_remove (vec *v, int idx) {
+	free(v->v[idx]);
+	int i = idx;
+	while (i < v->size - 1) {
+		v->v[i] = v->v[i + 1];
+		++ i;
+	}
+	-- v->size;
+}
+
+void *
+vec_at (vec *v, int idx) {
+	if (idx > v->size) {
+		return NULL;
+	}
+
+	return v->v[idx];
+}
+
+/* void */
+/* vec_shrink (vec *v) { */
+/* 	vec_realloc(v, v->size); */
+/* } */
+
+void *
+vec_pop_back (vec *v) {
+	void *back = malloc(v->elem_size);
+	memcpy(back, vec_back(v), v->elem_size);
+	vec_remove(v, v->size - 1);
+	return back;
+}
+
+void
+vec_assign (vec *v, vec *old_v) {
+	int i = 0;
+	while (i < v->size) {
+		free(v->v[i]);
+		++ i;
+	}
+	free(v->v);
+
+	v->elem_size = old_v->elem_size;
+	v->capacity = old_v->capacity;
+	v->v = malloc(sizeof(void *) * v->capacity);
+
+	i = 0;
+	while (i < old_v->size) {
+		vec_append(v, old_v->v[i]);
+		++ i;
+	}
+}
+
+void
+vec_swap (vec *v1, vec *v2) {
+	vec *tmp = malloc(sizeof(vec));
+	memmove(tmp, v1, sizeof(vec));
+	memmove(v1, v2, sizeof(vec));
+	memmove(v2, tmp, sizeof(vec));
+	free(tmp);
 }
