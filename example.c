@@ -12,8 +12,10 @@ main (void) {
 	}
 
 	printf("the vector: ");
+	int elem;
 	for (i = 0; i < 20; ++ i) {
-		printf("%d ", *(int *)vec_at(v, i)); // vec_at returns void * but we need an int
+		vec_at(v, i, &elem);
+		printf("%d ", elem); // vec_at returns void * but we need an int
 	}
 	printf("\n");
 
