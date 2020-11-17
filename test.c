@@ -12,11 +12,13 @@ print_vec (const char *c, vec *v) {
 	int i = 0;
 	printf(c);
 	printf("size: %d\ncapacity: %d\n", v->size, v->capacity);
+	int elem;
 	while (i < v->size) {
-		print("%d\n", vec_at(v, i));
+		vec_at(v, i, &elem);
+		printf("%d ", elem);
 		++ i;
 	}
-	printf("\n");
+	printf("\n\n");
 }
 
 void
@@ -32,7 +34,7 @@ main (void) {
 	vec_append(v, elems + 4);
 	print_vec("5 elements appened:\n", v);
 
-	vec_insert(v, elems + 5, 3);
+	vec_insert(v, 3, elems + 5);
 	print_vec("elem 6 inserted:\n", v);
 
 	vec_remove(v, 5);
@@ -43,13 +45,14 @@ main (void) {
 	vec_reserve(v, 10);
 	print_vec("reserved:\n", v);
 
-	vec *new_v = malloc(sizeof(vec));
+	vec *new_v = vec_alloc;
 	vec_assign(new_v, v);
 	print_vec("new vector:\n", new_v);
 
-	int *popped = vec_pop_back(v);
-	print("popped = %d\n\n", popped);
-	free(popped);
+	int popped;
+	vec_pop(v, &popped);
+	printf("popped = %d\n", popped);
+	print_vec("", v);
 
 	vec_swap(v, new_v);
 	printf("swapped:\n");
@@ -60,12 +63,11 @@ main (void) {
 	print_vec("cleared new_v:\n", new_v);
 	vec_free(new_v);
 
-	vec_set(v, elems + 5, 0);
+	vec_set(v, 0, elems + 5);
 	print_vec("set idx 0 to elem + 5:\n", v);
 
 	vec_erase(v, 0, 2);
 	print_vec("erased from 0 to 2:\n", v);
-
 	vec_free(v);
 
 	muntrace();

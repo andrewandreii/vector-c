@@ -9,7 +9,7 @@
 ## How to test
 
 ```sh
-make test
+source test
 ```
 
 ## How to build

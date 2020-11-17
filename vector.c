@@ -1,161 +1,100 @@
 #include "vector.h"
+#include <stdio.h>
 
 vec *
 vec_make (int elem_size) {
-	vec *v = malloc(sizeof(vec));
-	v->v = malloc(sizeof(void *) * DEFAULT_SIZE);
+	vec *v = vec_alloc;
+	v->v = malloc(elem_size * DEFAULT_SIZE);
 	v->capacity = DEFAULT_SIZE;
 	v->elem_size = elem_size;
 }
 
-void
-vec_free_v (vec *v) {
-	int i = 0;
-	while (i < v->size) {
-		free(v->v[i]);
-		++ i;
-	}
-	v->size = 0;
+vec *
+vec_from_ptr (int *l, int size) {
+	vec *v = vec_alloc;
+	v->v = malloc(sizeof(*l) * size);
+	v->capacity = v->size = size;
+	v->elem_size = sizeof(*l);
 }
 
 void
 vec_free (vec *v) {
-	vec_free_v(v);
 	free(v->v);
 	free(v);
 }
 
 void
-vec_erase (vec *v, int start, int end) {
-	int i = start;
-	while (i < end) {
-		free(v->v[i]);
-		++ i;
-	}
-
-	memmove(v->v + start, v->v + end, (v->size - end) * sizeof(void *));
-	v->size = v->size - (end - start);
-}
-
-void
 vec_realloc (vec *v, int new_cap) {
-	v->v = realloc(v->v, sizeof(void *) * new_cap);
+	v->v = realloc(v->v, new_cap * v->elem_size);
 	v->capacity = new_cap;
 }
 
-// copy a void * to another void *
-void *
-vec_make_ptr (vec *v, void *data) {
-	void *new_ptr = malloc(v->elem_size);
-	memcpy(new_ptr, data, v->elem_size);
-	return new_ptr;
+void
+vec_erase (vec *v, int start, int end) {
+	memmove(v->v + TOADDR(v, start), v->v + TOADDR(v, end), TOADDR(v, (v->size - end)));
+	v->size -= start + end;
 }
 
 void
-vec_do (vec *v, void *data, int idx, int code) {
-	void *new_ptr = vec_make_ptr(v, data);
-
-	switch (code) {
-		case VEC_SET:
-			vec_set_ptr(v, new_ptr, idx); break;
-		case VEC_APPEND:
-			vec_append_ptr(v, new_ptr); break;
-		case VEC_INSERT:
-			vec_insert_ptr(v, new_ptr, idx); break;
-	}
+vec_pop (vec *v, void *ret) {
+	memcpy(ret, v->v + (v->size - 1) * v->elem_size, v->elem_size);
+	vec_remove(v, v->size - 1);
 }
 
 void
-vec_set_ptr (vec *v, void *data, int idx) {
-	free(v->v[idx]);
-	v->v[idx] = data;
+vec_at (vec *v, int idx, void *ret) {
+	memcpy(ret, v->v + idx * v->elem_size, v->elem_size);
 }
 
 void
-vec_append_ptr (vec *v, void *data) {
+vec_set (vec *v, int idx, void *data) {
+	memcpy(v->v + idx * v->elem_size, data, v->elem_size);
+}
+
+void
+vec_insert (vec *v, int idx, void *data) {
 	if (v->size == v->capacity) {
 		vec_realloc(v, v->capacity + DEFAULT_SIZE);
 	}
 
-	v->v[v->size] = data;
+	memmove(v->v + (idx + 1) * v->elem_size, v->v + idx * v->elem_size, v->elem_size * (v->size - idx));
+	memcpy(v->v + idx * v->elem_size, data, v->elem_size);
 	++ v->size;
 }
 
-
 void
-vec_insert_ptr (vec *v, void *data, int idx) {
+vec_append (vec *v, void *data) {
 	if (v->size == v->capacity) {
 		vec_realloc(v, v->capacity + DEFAULT_SIZE);
 	}
 
-	int i = v->size;
-	while (i >= idx) {
-		v->v[i + 1] = v->v[i];
-		-- i;
-	}
-
-	v->v[idx] = data;
+	memcpy(v->v + v->size * v->elem_size, data, v->elem_size);
 	++ v->size;
 }
 
 void
 vec_remove (vec *v, int idx) {
-	free(v->v[idx]);
-	int i = idx;
-	while (i < v->size - 1) {
-		v->v[i] = v->v[i + 1];
-		++ i;
-	}
+	memmove(v->v + idx * v->elem_size, v->v + (idx + 1) * v->elem_size, v->elem_size * (v->size - idx));
 	-- v->size;
-}
-
-void *
-vec_at (vec *v, int idx) {
-	if (idx > v->size) {
-		return NULL;
-	}
-
-	return v->v[idx];
-}
-
-/* void */
-/* vec_shrink (vec *v) { */
-/* 	vec_realloc(v, v->size); */
-/* } */
-
-void *
-vec_pop_back (vec *v) {
-	void *back = malloc(v->elem_size);
-	memcpy(back, vec_back(v), v->elem_size);
-	vec_remove(v, v->size - 1);
-	return back;
-}
-
-void
-vec_assign (vec *v, vec *old_v) {
-	int i = 0;
-	while (i < v->size) {
-		free(v->v[i]);
-		++ i;
-	}
-	free(v->v);
-
-	v->elem_size = old_v->elem_size;
-	v->capacity = old_v->capacity;
-	v->v = malloc(sizeof(void *) * v->capacity);
-
-	i = 0;
-	while (i < old_v->size) {
-		vec_append(v, old_v->v[i]);
-		++ i;
-	}
 }
 
 void
 vec_swap (vec *v1, vec *v2) {
 	vec *tmp = malloc(sizeof(vec));
-	memmove(tmp, v1, sizeof(vec));
-	memmove(v1, v2, sizeof(vec));
-	memmove(v2, tmp, sizeof(vec));
+	memcpy(tmp, v1, sizeof(vec));
+	memcpy(v1, v2, sizeof(vec));
+	memcpy(v2, tmp, sizeof(vec));
 	free(tmp);
+}
+
+void
+vec_assign (vec *v1, vec *v2) {
+	if (v1 != NULL && v1->v != NULL) {
+		free(v1->v);
+	}
+	v1->elem_size = v2->elem_size;
+	v1->capacity = v2->capacity;
+	v1->size = v2->size;
+	v1->v = malloc(v1->capacity * v1->elem_size);
+	memcpy(v1->v, v2->v, v1->capacity * v1->elem_size);
 }
