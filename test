@@ -1,9 +1,8 @@
-# !/bin/sh
+#! /bin/sh
 
-touch mtracedata
-export MALLOC_TRACE=$( pwd )/mtracedata
+export MALLOC_TRACE=$(pwd)/mtracedata
 gcc test.c -g
 ./a.out
 mtrace a.out mtracedata
 
-# filetype=sh
+#! filetype=sh

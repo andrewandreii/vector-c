@@ -1,0 +1,130 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "VECTOR" "1" "November 2020" "" ""
+.
+.SH "NAME"
+\fBvector\fR \- Vector Library Man Page
+.
+.SH "1 MACROS"
+.
+.SS "1\.1 NORMAL MACROS"
+.
+.TP
+\fBDEFAULT_SIZE\fR
+default value is 4, this is used only when the vector is created with \fBvec_make\fR and when the capacity needs to be increased
+.
+.TP
+\fBvec_alloc\fR
+allocates enough memory for a vector (it is not the same as \fBvec_make\fR)
+.
+.TP
+\fBvec_front(v)\fR
+the address of the first element in the vector
+.
+.TP
+\fBvec_back(v)\fR
+the address of the last element in the vector
+.
+.TP
+\fBvec_empty(v)\fR
+checks if size is 0
+.
+.TP
+\fBvec_clear(v)\fR
+sets size to 0
+.
+.TP
+\fBvec_shrink(v)\fR
+reallocates the vector to fit the current size
+.
+.SS "1\.2 ALIASES TO FUNCTIONS"
+.
+.TP
+\fBvec_reserve\fR
+see \fBvec_realloc\fR
+.
+.TP
+\fBvec_pop_back\fR
+see \fBvec_pop\fR
+.
+.TP
+\fBvec_push_back\fR
+see \fBvec_append\fR
+.
+.SH "2 FUNCTIONS"
+all the functions found in this library
+.
+.SS "2\.1 CREATION AND DELETION"
+.
+.TP
+\fBvec *vec_make(int elem_size)\fR
+initialize a vector and returns a pointer to it
+.
+.IP
+\fBelem_size\fR is a number reprezenting the size of the elements in the vector (ie\. the size of int is 4)
+.
+.TP
+\fBvec *vec_use_ptr(void *l, int size, int elem_size)\fR
+assigns the pointer to the inner list
+.
+.IP
+\fB!! dont use vec_free if the pointer isnt created using dynamic mmemory allocation (ex malloc)\fR
+.
+.TP
+\fBvec *vec_from_ptr (void *l, int size, int elem_size)\fR
+copies everything from the list given to the inner list
+.
+.TP
+\fBvoid vec_free(vec *v)\fR
+frees everything that has been allocated to make the vector
+.
+.SS "2\.2 VECTOR FUNCTIONS"
+.
+.TP
+\fBvoid vec_realloc(vec *v, int new_cap)\fR
+changes the capacity of the vector
+.
+.TP
+\fBvoid vec_erase(vec *v, int start, int end)\fR
+erases a part of the vector (see \fBvec_clear\fR if you want the clear the vector)
+.
+.TP
+\fBvoid vec_pop(vec *v, void *ret)\fR
+returns the last element from the vector and copies it to \fBret\fR, then it removes it
+.
+.TP
+\fBvoid vec_at(vec *v, int idx, void *ret)\fR
+copies the element at \fBidx\fR to ret
+.
+.TP
+\fBvoid vec_set(vec *v, int idx, void *data)\fR
+copies \fBdata\fR to the element at \fBidx\fR
+.
+.TP
+\fBvoid vec_insert(vec *v, int idx, void *data)\fR
+inserts \fBdata\fR at before the element at \fBidx\fR
+.
+.TP
+\fBvoid vec_append(vec *v, void *data)\fR
+appends \fBdata\fR at the end of the vector
+.
+.TP
+\fBvoid vec_remove(vec *v, int idx)\fR
+deletes the element at \fBidx\fR
+.
+.SS "2\.3 BINARY OPERATIONS WITH VECTORS"
+.
+.TP
+\fBvoid vec_swap(vec *v1, vec *v2)\fR
+swaps everything between \fBv1\fR and \fBv2\fR
+.
+.TP
+\fBvoid vec_assign(vec *v1, vec *v2)\fR
+assigns the contents from \fBv2\fR to \fBv1\fR
+.
+.IP
+\fB!! \fBv1\fR must be fist allocated with \fBvec_alloc\fR, make sure the inner list of the vector isnt already allocated as this could cause memory leaks\fR
+.
+.SH "3 EXAMPLES"
+see examples directory

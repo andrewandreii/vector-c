@@ -1,0 +1,97 @@
+vector(1) - Vector Library Man Page
+===================================
+
+## 1 MACROS
+### 1.1 NORMAL MACROS
+
+  * `DEFAULT_SIZE`:
+    default value is 4, this is used only when the vector is created with `vec_make` and when the capacity needs to be increased
+
+  * `vec_alloc`:
+    allocates enough memory for a vector (it is not the same as `vec_make`)
+
+  * `vec_front(v)`:
+    the address of the first element in the vector
+
+  * `vec_back(v)`:
+    the address of the last element in the vector
+
+  * `vec_empty(v)`:
+    checks if size is 0
+
+  * `vec_clear(v)`:
+    sets size to 0
+
+  * `vec_shrink(v)`:
+    reallocates the vector to fit the current size
+
+### 1.2 ALIASES TO FUNCTIONS
+  * `vec_reserve`:
+    see `vec_realloc`
+
+  * `vec_pop_back`:
+    see `vec_pop`
+
+  * `vec_push_back`:
+    see `vec_append`
+
+## 2 FUNCTIONS
+
+all the functions found in this library
+
+### 2.1 CREATION AND DELETION
+  * `vec *vec_make(int elem_size)`:
+    initialize a vector and returns a pointer to it
+
+	**elem_size** is a number reprezenting the size of the elements in the vector (ie. the size of int is 4)
+
+  * `vec *vec_use_ptr(void *l, int size, int elem_size)`:
+    assigns the pointer to the inner list
+
+	**!! dont use vec_free if the pointer isnt created using dynamic mmemory allocation (ex malloc)**
+
+  * `vec *vec_from_ptr (void *l, int size, int elem_size)`:
+    copies everything from the list given to the inner list
+
+  * `void vec_free(vec *v)`:
+    frees everything that has been allocated to make the vector
+
+### 2.2 VECTOR FUNCTIONS
+
+  * `void vec_realloc(vec *v, int new_cap)`:
+    changes the capacity of the vector
+
+  * `void vec_erase(vec *v, int start, int end)`:
+    erases a part of the vector (see `vec_clear` if you want the clear the vector)
+
+  * `void vec_pop(vec *v, void *ret)`:
+    returns the last element from the vector and copies it to `ret`, then it removes it
+
+  * `void vec_at(vec *v, int idx, void *ret)`:
+    copies the element at `idx` to ret
+
+  * `void vec_set(vec *v, int idx, void *data)`:
+    copies `data` to the element at `idx`
+
+  * `void vec_insert(vec *v, int idx, void *data)`:
+    inserts `data` at before the element at `idx`
+
+  * `void vec_append(vec *v, void *data)`:
+    appends `data` at the end of the vector
+
+  * `void vec_remove(vec *v, int idx)`:
+    deletes the element at `idx`
+
+### 2.3 BINARY OPERATIONS WITH VECTORS
+
+  * `void vec_swap(vec *v1, vec *v2)`:
+    swaps everything between `v1` and `v2`
+
+  * `void vec_assign(vec *v1, vec *v2)`:
+    assigns the contents from `v2` to `v1`
+
+	**!! `v1` must be fist allocated with `vec_alloc`, make sure the inner list of the vector isnt already allocated as this could cause memory leaks**
+
+## 3 EXAMPLES
+
+  see examples directory

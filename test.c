@@ -25,13 +25,15 @@ void
 main (void) {
 	mtrace();
 
-	vec *v = vec_make(4);
 	int elems[6] = { 1, 2, 3, 4, 5, 6 };
-	vec_append(v, elems + 0);
-	vec_append(v, elems + 1);
-	vec_append(v, elems + 2);
-	vec_append(v, elems + 3);
-	vec_append(v, elems + 4);
+	/* vec *v = vec_make(4); */
+	/* vec_append(v, elems + 0); */
+	/* vec_append(v, elems + 1); */
+	/* vec_append(v, elems + 2); */
+	/* vec_append(v, elems + 3); */
+	/* vec_append(v, elems + 4); */
+	// or
+	vec *v = vec_from_ptr(elems, 5, 4);
 	print_vec("5 elements appened:\n", v);
 
 	vec_insert(v, 3, elems + 5);
@@ -50,9 +52,9 @@ main (void) {
 	print_vec("new vector:\n", new_v);
 
 	int popped;
-	vec_pop(v, &popped);
+	vec_pop(new_v, &popped);
 	printf("popped = %d\n", popped);
-	print_vec("", v);
+	print_vec("", new_v);
 
 	vec_swap(v, new_v);
 	printf("swapped:\n");
@@ -68,6 +70,7 @@ main (void) {
 
 	vec_erase(v, 0, 2);
 	print_vec("erased from 0 to 2:\n", v);
+
 	vec_free(v);
 
 	muntrace();

@@ -10,15 +10,16 @@ typedef struct {
 	void *v;
 } vec;
 #define DEFAULT_SIZE 4
-#define CAST(x, y) (x)y
-#define TOADDR(v, x) x * v->elem_size
+#define TOADDR(v, x) (x) * v->elem_size
 
 #define vec_front(v) v->v[0]
+#define vec_back(v) v->v[TOADDR(v, v->size - 1)]
 #define vec_empty(v) (v->size == 0)
 #define vec_alloc malloc(sizeof(vec))
 
 vec *vec_make (int elem_size);
-vec *vec_from_ptr (int *l, int size);
+vec *vec_use_ptr (void *l, int size, int elem_size);
+vec *vec_from_ptr (void *l, int size, int elem_size);
 #define vec_clear(v) v->size = 0
 void vec_free (vec *v);
 
@@ -27,6 +28,7 @@ void vec_erase (vec *v, int start, int end);
 void vec_realloc (vec *v, int new_cap);
 
 void vec_set (vec *v, int idx, void *data);
+#define vec_push_back vec_append
 void vec_append (vec *v, void *data);
 void vec_insert (vec *v, int idx, void *data);
 void vec_remove (vec *v, int idx);
@@ -34,6 +36,7 @@ void vec_remove (vec *v, int idx);
 void vec_at (vec *v, int idx, void *ret);
 #define vec_shrink(v) vec_realloc(v, v->size);
 /* void *vec_shrink (vec *v); */
+#define vec_pop_back vec_pop
 void vec_pop (vec *v, void *ret);
 
 void vec_assign (vec *v1, vec *v2);
